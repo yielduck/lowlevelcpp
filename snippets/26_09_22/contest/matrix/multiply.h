@@ -1,12 +1,4 @@
-Matrix createMatrix(std::size_t const n, std::size_t const m)
-{
-    return
-    {
-        .data = static_cast<float *>(std::malloc(sizeof(float) * n * m)),
-        .width = n,
-        .height = m,
-    };
-}
+#include "create.h"
 Matrix operator*(Matrix const m1, Matrix const m2)
 {
     Matrix const m = createMatrix(m2.width, m1.height);
