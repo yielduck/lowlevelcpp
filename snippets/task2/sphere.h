@@ -1,5 +1,6 @@
 #pragma once
 #include "common/ray.h"
+#include "common/maybe_two_intersections.h"
 
 struct Sphere
 {
