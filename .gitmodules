@@ -1,0 +1,3 @@
+[submodule "snippets/17_10_22/cameratest/camera"]
+	path = snippets/17_10_22/cameratest/camera
+	url = git@github.com:yielduck/camera.git
