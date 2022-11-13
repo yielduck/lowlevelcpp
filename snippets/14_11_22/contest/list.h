@@ -1,24 +1,24 @@
 #pragma once
-#include <cstdlib>
+#include "tree.h"
 namespace list
 {
 
-struct Node
+struct ListNode
 {
-    int value;
-    Node *next;
+    Tree value;
+    ListNode *next;
 };
 
-using List = Node *;
+using List = ListNode *;
 
-inline List cons(int const value, List const next)
+inline List cons(Tree const value, List const next)
 {
-    Node * const node = static_cast<Node *>(std::malloc(sizeof(Node)));
+    ListNode * const node = static_cast<ListNode *>(std::malloc(sizeof(ListNode)));
     node->value = value;
     node->next = next;
     return node;
 }
-inline List prepend(Node * const head, List const tail)
+inline List prepend(ListNode * const head, List const tail)
 {
     head->next = tail;
     return head;
@@ -26,7 +26,7 @@ inline List prepend(Node * const head, List const tail)
 
 struct ListUncons
 {
-    Node *head;
+    ListNode *head;
     List tail;
 };
 inline ListUncons uncons(List const list)
@@ -38,15 +38,10 @@ inline void destroy(List const list)
 {
     if(list != nullptr)
     {
-        destroy(list->next);
-        std::free(list);
+        auto const [x, xs] = uncons(list);
+        std::free(x);
+        destroy(xs);
     }
-}
-inline List create(int const * const begin, int const * const end)
-{
-    return begin == end
-        ? nullptr
-        : cons(*begin, create(begin + 1, end));
 }
 
 inline unsigned int length(List const list)
@@ -60,9 +55,9 @@ inline List reverse(List list)
     List accum = nullptr;
     while(list != nullptr)
     {
-        ListUncons const u = uncons(list);
-        accum = prepend(u.head, accum);
-        list = u.tail;
+        auto const [x, xs] = uncons(list);
+        accum = prepend(x, accum);
+        list = xs;
     }
     return accum;
 }
@@ -71,7 +66,7 @@ inline List concat(List const left, List const right)
     if(left == nullptr)
         return right;
 
-    Node *last = left;
+    ListNode *last = left;
     while(last->next != nullptr)
         last = last->next;
     last->next = right;
@@ -80,16 +75,16 @@ inline List concat(List const left, List const right)
 
 struct Iterator
 {
-    Node *node;
+    ListNode *node;
 
-    Iterator &operator++(   ) {                  node = node->next; return *this;}
-    Iterator  operator++(int) {Node *tmp = node; node = node->next; return {tmp};}
+    Iterator &operator++(   ) {                      node = node->next; return *this;}
+    Iterator  operator++(int) {ListNode *tmp = node; node = node->next; return {tmp};}
 
     bool operator!=(Iterator const &other) const {return node != other.node;}
     bool operator==(Iterator const &other) const {return node == other.node;}
 
-    int &operator* () const {return  node->value;}
-    int *operator->() const {return &node->value;}
+    Tree &operator* () const {return  node->value;}
+    Tree *operator->() const {return &node->value;}
 };
 
 inline Iterator begin(List const list) {return {   list};}
