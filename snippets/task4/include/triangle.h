@@ -15,7 +15,8 @@ struct RayTriangleIntersection
 };
 inline bool happened(RayTriangleIntersection const &i)
 {
-    return i.p >= 0.f
+    return i.t >= 1e-4f
+        && i.p >= 0.f
         && i.q >= 0.f
         && i.p + i.q <= 1.f;
 }
