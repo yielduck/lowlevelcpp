@@ -6,5 +6,5 @@ struct MaybeTwoIntersections
 MaybeTwoIntersections const None = {.tMin = 0.f, .tMax = -1.f};
 inline bool happened(MaybeTwoIntersections const i)
 {
-    return i.tMin <= i.tMax;
+    return i.tMax > 0.f && i.tMin <= i.tMax;
 }
