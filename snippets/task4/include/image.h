@@ -1,15 +1,20 @@
 #pragma once
+#include <cstdlib>
 #include "vec2.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-struct Color
+struct RGB
 {
     unsigned char r, g, b;
 };
+struct RGBA
+{
+    unsigned char r, g, b, a;
+};
 
 
-vec3 toVec3(Color const c)
+vec3 toVec3(RGB const c)
 {
     return
     {
@@ -21,10 +26,10 @@ vec3 toVec3(Color const c)
 
 struct Image
 {
-    Color *color;
+    RGB *color;
     int width, height;
 
-    Color const *operator[](int const y) const {return color + (height - y - 1) * width;}
+    RGB const *operator[](int const y) const {return color + (height - y - 1) * width;}
 };
 
 inline Image createImage(char const * const filename)
@@ -33,7 +38,7 @@ inline Image createImage(char const * const filename)
     unsigned char * const bytes = stbi_load(filename, &w, &h, &c, 3);
     return
     {
-        .color = reinterpret_cast<Color *>(bytes),
+        .color = reinterpret_cast<RGB *>(bytes),
         .width = w,
         .height = h,
     };

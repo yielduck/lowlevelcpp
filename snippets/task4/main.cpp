@@ -6,6 +6,13 @@
 #include <fstream>
 #include <iostream>
 
+#include <SFML/Graphics.hpp>
+
+extern "C" // black magic
+{
+void _ZN2sf6StringC1EPKcRKSt6locale() {}
+}
+
 struct Hit
 {
     vec3 position;
@@ -17,20 +24,13 @@ int main()
 {
     using u32 = unsigned int;
 
-    u32 const width  = 1920u;
-    u32 const height = 1080u;
+    u32 const width  = 1280u;
+    u32 const height = 720u;
+
+    sf::RenderWindow window(sf::VideoMode(width, height), "The window");
 
     float const fwidth  =  width;
     float const fheight = height;
-
-    Camera const camera =
-    {
-        .position = {-4.f, 3.6f, 12.f},
-        .at = {0.f, 0.f, 0.f},
-        .up = {0.f, 1.f, 0.f},
-        .aspectRatio = fwidth / fheight,
-        .verticalFOV = 0.55f,
-    };
 
     std::ifstream mesh("../A6M.obj");
     std::vector<Triangle> triangle = parseOBJ(mesh);
@@ -40,29 +40,6 @@ int main()
     auto const closestHit = [&](Ray const &ray)
         -> std::optional<Hit>
     {
-        /* bruteforce:
-        if(triangle.size() == 0u)
-            return std::nullopt;
-
-        std::vector<RayTriangleIntersection> intersection;
-        for(auto const &t : triangle)
-            intersection.push_back(rayTriangleIntersection(ray, t));
-
-        auto const it = std::min_element(intersection.begin(), intersection.end());
-        if(false == happened(*it))
-            return std::nullopt;
-
-        float const t = it->t;
-        auto const i = it - intersection.begin();
-
-        vec2 const tex = interpolate(triangle[i].t, *it);
-        return
-        {{
-            .position = ray.point(t),
-            .normal = normalize(interpolate(triangle[i].n, *it)),
-            .albedo = sample(image, tex),
-        }}; */
-
         auto const opt = rayTreeIntersection(ray, tree);
         if(!opt)
             return std::nullopt;
@@ -104,37 +81,64 @@ int main()
     };
     auto const tonemap = [](vec3 const c)
     {
-        float const exposure = 0.3f;
+        float const exposure = 1.f;
         float const almost256 = 255.999f;
-        return vec3
+        return RGBA
         {
-            almost256 * (1.f - std::exp(-exposure * c.x)),
-            almost256 * (1.f - std::exp(-exposure * c.y)),
-            almost256 * (1.f - std::exp(-exposure * c.z)),
+            .r = static_cast<unsigned char>(almost256 * (1.f - std::exp(-exposure * c.x))),
+            .g = static_cast<unsigned char>(almost256 * (1.f - std::exp(-exposure * c.y))),
+            .b = static_cast<unsigned char>(almost256 * (1.f - std::exp(-exposure * c.z))),
+            .a = 255,
         };
     };
 
-    std::cout << "P3\n" << width << " " << height << "\n255\n";
-    for(u32 y = 0u; y < height; ++y)
-    for(u32 x = 0u; x <  width; ++x)
+    std::vector<RGBA> color(width * height);
+    sf::Texture texture;
+    texture.create(width, height);
+
+    sf::Sprite sprite(texture);
+
+    float phi = 0.f;
+    float theta = 0.4f;
+    float const r = 15.f;
+    Camera camera =
     {
-        float const u = -1.f + 2.f * float(x) / fwidth;
-        float const v = -1.f + 2.f * float(y) / fheight;
-        float const du = 1.f / fwidth;
-        float const dv = 1.f / fheight;
+        .position = {0.f, 0.f, r},
+        .at = {0.f, 0.f, 0.f},
+        .up = {0.f, 1.f, 0.f},
+        .aspectRatio = fwidth / fheight,
+        .verticalFOV = 0.55f,
+    };
 
-        // 4 rays for antialiasing
-        vec3 const color = tonemap
-        (
-            trace(camera.castRay(u - du, -v - dv))
-          + trace(camera.castRay(u - du, -v + dv))
-          + trace(camera.castRay(u + du, -v - dv))
-          + trace(camera.castRay(u + du, -v + dv))
-        );
+    while(window.isOpen())
+    {
+        phi -= 0.1f;
+        camera.position = vec3
+        {
+            std::cos(theta) * std::sin(phi),
+            std::sin(theta),
+            std::cos(theta) * std::cos(phi),
+        } * r;
 
-        std::cout << u32(color.x) << " ";
-        std::cout << u32(color.y) << " ";
-        std::cout << u32(color.z) << " ";
+        sf::Event event;
+        while(window.pollEvent(event))
+        {
+            if(event.type == sf::Event::Closed)
+                window.close();
+        }
+
+        for(u32 y = 0u; y < height; ++y)
+        for(u32 x = 0u; x <  width; ++x)
+        {
+            float const u = -1.f + 2.f * float(x) / fwidth;
+            float const v = -1.f + 2.f * float(y) / fheight;
+            color[y * width + x] = tonemap(trace(camera.castRay(u, -v)));
+        }
+
+        texture.update(reinterpret_cast<sf::Uint8 const *>(color.data()));
+        window.draw(sprite);
+
+        window.display();
     }
 
     destroyTree(tree);
