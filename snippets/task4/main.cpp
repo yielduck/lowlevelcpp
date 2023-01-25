@@ -24,8 +24,8 @@ int main()
 {
     using u32 = unsigned int;
 
-    u32 const width  = 1280u;
-    u32 const height = 720u;
+    u32 const width  = 2560u;
+    u32 const height = 1600u;
 
     sf::RenderWindow window(sf::VideoMode(width, height), "The window");
 
@@ -49,7 +49,7 @@ int main()
         {{
             .position = ray.point(i.t),
             .normal = normalize(interpolate(tri.n, i)),
-            .albedo = sample(image, interpolate(tri.t, i)),
+            .albedo = sample(image, tex),
         }};
     };
 
@@ -72,12 +72,13 @@ int main()
         };
         std::optional<Hit> const shadowHit = closestHit(shadowRay);
         float const NL = std::max(0.f, dot(hit->normal, lightDir));
+        vec3 const halfway = normalize(lightDir - ray.direction);
 
-        vec3 const color = !shadowHit
-            ? lightColor * NL
-            : vec3{0.f, 0.f, 0.f};
+        float const ambient = 0.3f;
+        float const diff = !shadowHit ? NL : 0.f;
+        float const spec = !shadowHit ? std::pow(dot(hit->normal, halfway), 32.f) : 0.f;
 
-        return (skyColor * 0.3f + color) * hit->albedo;
+        return (skyColor * 0.3f + lightColor * diff) * hit->albedo + lightColor * spec;
     };
     auto const tonemap = [](vec3 const c)
     {
