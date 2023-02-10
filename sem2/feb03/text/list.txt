@@ -1,0 +1,36 @@
+Когда-то не так давно, вам приходилось встретиться с односвязным списком в виде
+
+struct Node
+{
+    int value;
+    Node *next;
+};
+using List = Node *;
+
+https://github.com/yielduck/lowlevelcpp/tree/main/snippets/31_10_22/contest
+
+Здесь возникает та же самая проблема, что и с функциями, которые не хочется копипастить. Решение точно такое же -- можно создавать шаблоны структур:
+
+template<typename T>
+struct Node
+{
+    T value;
+    Node<T> *next;
+};
+template<typename T>
+using List = Node<T> *;
+Реализуйте шаблоны функций
+
+template<typename T>
+List<T> cons(T, List<T> = nullptr);
+template<typename T>
+void destroyList(List<T>);
+которые создают и разрушают список соответственно.
+
+Пример:
+
+auto const list = cons(1.5f, cons(3.f, cons(4.5f)));
+for(auto it = list; it != nullptr; it = it->next)
+    std::cout << it->value << ' ';
+std::cout << std::endl; // 1.5 3 4.5
+destroyList(list);

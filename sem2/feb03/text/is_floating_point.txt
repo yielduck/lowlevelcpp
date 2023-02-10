@@ -1,0 +1,32 @@
+Для шаблона функций, вычисляющего факториал числа,
+
+template<std::uint64_t n>
+std::uint64_t factorial   () {return n * factorial<n - 1>();}
+template<>
+std::uint64_t factorial<0>() {return 1;}
+существует аналогичный ему шаблон структур:
+
+template<std::uint64_t n>
+struct Factorial
+{
+    static constexpr std::uint64_t value = n * Factorial<n - 1>::value;
+};
+template<>
+struct Factorial<0>
+{
+    static constexpr std::uint64_t value = 1;
+};
+
+Здесь слово constexpr является более сильным const -- а именно, это не просто константа, а константа, вычисляемая во время компиляции; слово static придаёт полю структуры смысл "одно общее поле для всех экземпляров структуры", поэтому факториал пяти можно получить сразу из типа, не создавая объект:
+std::uint64_t const fact5 = Factorial<5>::value;
+https://cppinsights.io/s/fc683850
+
+Поначалу, это выглядит несколько контринтуитивно -- мол, зачем делать структуру, если она ничего не содержит и мы даже не создаём её экземпляры? Тем не менее, это оказывается удобно, и в С++ такое встречается повсеместно. С помощью таких структур реализуют функции на типах -- вытягивают какие-нибудь их свойства, или преобразуют одни типы в другие: https://en.cppreference.com/w/cpp/header/type_traits
+
+Реализуйте шаблон структур
+
+template<typename T>
+struct is_floating_point;
+которые содержат статическое поле value типа bool, равное true, если T -- это float, double или long double, и false иначе: https://en.cppreference.com/w/cpp/types/is_floating_point
+
+Подсказка: используйте явную специализацию шаблона структур.

@@ -1,0 +1,47 @@
+Аргументами шаблонов могут быть не только другие шаблоны, типы и целые числа, но и целые списки аргументов длиной от нуля до [сколько-то там, ограничено настройками компилятора]: 
+
+https://en.cppreference.com/w/cpp/language/parameter_pack
+
+Объявляются и раскрываются они через многоточие. Например, так можно через пробел вывести все аргументы:
+
+template<typename... Ts>
+void print(Ts... ts)
+{
+    ((std::cout << ts << ' '),...);
+}
+https://cppinsights.io/s/6afdf0b8
+
+То, что в скобках перед запятой, просто копируется для каждого элемента из списка. Делать так можно не только с запятой, а с любым бинарным оператором, называется это fold expressions: 
+
+https://en.cppreference.com/w/cpp/language/fold
+
+С помощью std::make_integer_sequence, можно сгенерировать список последовательных целых чисел и, например, посчитать их квадраты:
+
+using u8 = std::uint8_t;
+using u16 = std::uint16_t;
+template<u16... xs>
+u16 square_impl(u8 const i, std::integer_sequence<u16, xs...>)
+{
+    constexpr u16 array[] = {(xs * xs)...};
+    return array[i];
+}
+u16 square(u8 const i)
+{
+    return square_impl(i, std::make_integer_sequence<u16, 256>{});
+}
+Этот трюк, насовать всё что нужно в массив, позволяет связать compile-time вычисления с runtime индексами.
+
+С его помощью, реализуйте шаблон функций
+
+template<std::uint64_t a0, std::uint64_t a1>
+std::uint64_t fib64(std::uint8_t n);
+
+которые возвращают остаток от деления n-го числа Фибоначчи на 2^64, так, что
+
+fib64<a0, a1>(0) = a0
+fib64<a0, a1>(1) = a1
+fib64<a0, a1>(n) = fib64<a0, a1>(n - 1) + fib64<a0, a1>(n - 2), 1 < n < 256
+
+Она должна просто доставать результат из заранее запечённого массива. Иначе, решение не пройдёт по времени.
+
+#include-ить ничего не надо, над вашим кодом есть <cstdint> и <utility>.

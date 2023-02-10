@@ -1,0 +1,34 @@
+Теперь, обладая тайными знаниями о шаблонах, можно расшифровывать древние манускрипты с цппреференса, вроде этого: 
+
+https://en.cppreference.com/w/cpp/algorithm/sort
+
+Реализуйте шаблон функций
+
+template<typename RandomIt, typename Compare>
+void sort(RandomIt begin, RandomIt end, Compare cmp);
+которые сортируют диапазон [begin, end) в порядке, индуцируемом объектом cmp.
+
+#include-ить ничего нельзя.
+
+Гарантируется всё то же самое, что и на cppreference, сортировать можно как угодно.
+
+Пример:
+
+int a[] = {1, 2, 3, 4, 5};
+sort(a, a + 5, [](int a, int b) {return a > b;}); // {5, 4, 3, 2, 1}
+
+std::vector<int> v = {5, 4, 3, 2, 1};
+sort(v.begin(), v.end(), std::less<int>{}); // {1, 2, 3, 4, 5}
+
+Если кто снова забыл, то
+
+auto const f = [](int a, int b) {return a > b;}
+для нас эквивалентно
+
+struct __lambda__1488
+{
+    bool operator()(int a, int b) const {return a > b;}
+};
+__lambda__1488 const f = {};
+
+https://cppinsights.io/lnk?code=YXV0byBjb25zdCBmID0gW10oaW50IGEsIGludCBiKSB7cmV0dXJuIGEgPiBiO307&insightsOptions=cpp20&std=cpp20&rev=1.0

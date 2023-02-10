@@ -1,0 +1,51 @@
+Шаблоны можно специализировать вручную. Так, решение предыдущей задачи можно сломать, если после определения шаблона min написать такую специализацию:
+
+template<>
+void min<int>(int a, int b)
+{
+    return a < b ? b : a;
+}
+Тогда, min на int-ах будет работать как max. Очень страшно, но иногда очень полезно.
+
+Шаблонными аргументами могут выступать не только типы. Это могут быть целые числа и даже другие шаблоны: 
+
+https://en.cppreference.com/w/cpp/language/template_parameters
+
+Эти возможности позволяют перенести некоторые вычисления из runtime в compile-time. Например, у обычного кода, считающего факториал
+
+std::uint64_t factorial(std::uint64_t n)
+{
+    return n == 0 ? 1
+                  : n * factorial(n - 1);
+}
+есть compile-time аналог:
+
+template<std::uint64_t n>
+std::uint64_t factorial   () {return n * factorial<n - 1>();}
+template<>
+std::uint64_t factorial<0>() {return 1;}
+Компилятор сгенерирует все специализации от n до 1 и остановится на нуле: https://cppinsights.io/s/49c2741c
+
+
+Реализуйте шаблон функций
+template<std::uint64_t n>
+std::uint64_t fib64();
+которые возвращают остаток от деления n-того числа Фибоначчи на 2^64.
+
+Считать, что fib64<0>() == 0, fib64<1>() == 1.
+
+В ответе #include-ить ничего не нужно, std::uint64_t оттуда видно.
+
+Тест (не забудьте оптимизацию прокинуть через -O3):
+#include <utility>
+#include <iostream>
+template<std::size_t... I>
+void print(std::index_sequence<I...>)
+{
+    ((std::cout << fib64<I>() << ' '),...);
+    std::cout << std::endl;
+}
+int main()
+{
+    print(std::make_index_sequence<256>{});
+}
