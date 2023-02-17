@@ -1,0 +1,37 @@
+Шаблон классов span<T>, ссылающихся на последовательно хранящиеся объекты T, определим как
+
+template<typename T>
+class span
+{
+    T *pBegin;
+    T *pEnd;
+public:
+    using size_type = std::size_t;
+    using iterator  = T *;
+    span();
+    span(T *begin, T *end);
+    span(T *begin, size_type count);
+    template<std::size_t N>
+    span(T (&)[N]);
+    T *          data() const;
+    size_type    size() const;
+    bool        empty() const;
+    iterator    begin() const;
+    iterator      end() const;
+    T &operator[](size_type) const;
+    span subspan(size_type offset, size_type count = -1) const;
+};
+Такой шаблон является урезанным вариантом стандартного std::span: 
+
+https://en.cppreference.com/w/cpp/container/span
+
+Реализуйте конструкторы и методы этого шаблона.
+
+Если при вызове subspan count = -1, возвращать элементы до самого конца.
+
+Подсказка: определение страшного шаблонного конструктора имеет вид
+
+template<typename T>
+template<std::size_t N>
+span<T>::span(T (&array)[N]) : ... {}
+здесь array -- это имя массива. Да, так выглядит ссылка на массив array, состоящий из N элементов типа T.

@@ -1,0 +1,32 @@
+Определим класс, реализующий комплексные числа, и функции для работы с ним в виде
+
+class Complex
+{
+    double x, y;
+public:
+    Complex(double re = 0., double im = 0.);
+    double real() const;
+    double imag() const;
+    Complex &operator+=(Complex const &);
+    Complex &operator-=(Complex const &);
+    Complex &operator*=(Complex const &);
+    Complex &operator/=(Complex const &);
+};
+double norm(Complex const &);
+double  arg(Complex const &);
+Complex operator+(Complex const &, Complex const &);
+Complex operator-(Complex const &, Complex const &);
+Complex operator*(Complex const &, Complex const &);
+Complex operator/(Complex const &, Complex const &);
+
+Допишите реализации всех определённых выше методов и функций.
+
+#include-ить ничего не надо, <cmath> уже есть.
+
+Прообразом этого класса является std::complex https://en.cppreference.com/w/cpp/numeric/complex
+
+Оттуда взяты, например, имена методов и названия функций norm (квадрат длины) и arg (аргумент комплексного числа).
+
+Подсказка: имя класса добавляется к имени метода как namespace, поэтому определение метода имеет вид
+
+double Complex::real() const {...}

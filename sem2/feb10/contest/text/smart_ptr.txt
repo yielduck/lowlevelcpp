@@ -1,0 +1,27 @@
+Шаблон класса "умного указателя" определим как
+
+template<typename T>
+class smart_ptr
+{
+    T *ptr;
+public:
+    ~smart_ptr();
+    smart_ptr();
+    template<typename... Args>
+    smart_ptr(Args &&... args)
+        : ptr(new T(static_cast<Args &&>(args)...))
+    {}
+    smart_ptr(smart_ptr<T> const &) = delete;
+    smart_ptr<T> &operator=(smart_ptr<T> const &) = delete;
+    smart_ptr(smart_ptr<T> &&);
+    smart_ptr<T> &operator=(smart_ptr<T> &&);
+    T *get() const;
+    operator bool() const;
+    T *operator->() const;
+    T &operator* () const;
+};
+Допишите реализации всех методов (кроме хитроумного шаблонного конструктора).
+
+Эффекты у последних четырех методов те же, что у unique_ptr: 
+
+https://en.cppreference.com/w/cpp/memory/unique_ptr
